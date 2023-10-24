@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Eventbridge Scheduler demo with Step Functions as the target
+Description: EventBridge Scheduler demo with Step Functions as the target
 Transform: AWS::Serverless-2016-10-31
 Globals:
   Function:
@@ -16,6 +16,41 @@ Parameters:
   pFnTimeout:
     Type: Number
 Resources:
+  EventsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - scheduler.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: step-functions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                Resource:
+                  - !GetAtt SFn.Arn
+  Schedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      # ScheduleExpression: cron(* * * * ? *)
+      ScheduleExpression: rate(5 minutes)
+      ScheduleExpressionTimezone: "America/New_York"
+      State: ENABLED
+      Target:
+        Arn: !GetAtt SFn.Arn
+        RoleArn: !GetAtt EventsRole.Arn
   SFnRole:
     Type: AWS::IAM::Role
     Properties:
@@ -145,9 +180,11 @@ Resources:
       LogGroupName: !Sub '/aws/lambda/${Fn2}'
       RetentionInDays: 7
 Outputs:
+  outSchedule:
+    Value: !GetAtt Schedule.Arn
+  outSFn:
+    Value: !GetAtt SFn.Arn
   outFn1:
     Value: !Ref Fn1
   outFn2:
     Value: !Ref Fn2
-  outSFn:
-    Value: !GetAtt SFn.Arn
