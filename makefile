@@ -19,3 +19,5 @@ sf.invoke:
 	aws --profile ${PROFILE} stepfunctions start-execution --state-machine-arn ${O_SF} --input file://etc/sfn.json | jq
 sf.list-executions:
 	aws --profile ${PROFILE} stepfunctions list-executions --state-machine-arn ${O_SF} | jq
+sf.list-failures:
+	aws --profile ${PROFILE} stepfunctions list-executions --state-machine-arn ${O_SF} | jq '.executions[] | select (.status == "FAILED")'
