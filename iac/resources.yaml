@@ -44,8 +44,8 @@ Resources:
     Properties:
       FlexibleTimeWindow:
         Mode: "OFF"
-      # ScheduleExpression: cron(* * * * ? *)
-      ScheduleExpression: rate(5 minutes)
+      ScheduleExpression: cron(*/5 * * * ? *)
+      # ScheduleExpression: rate(5 minutes)
       ScheduleExpressionTimezone: "America/New_York"
       State: ENABLED
       Target:
